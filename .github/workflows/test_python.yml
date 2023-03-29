@@ -1,0 +1,31 @@
+name: Python CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout my project
+      - name: Install Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install requirements
+        run: |
+          python -m pip install -r requirements.txt
+      - name: Run pylint
+        run: |
+          pylint application/ tests/ --exit-zero
+      - name: Run coverage
+        run: |
+          coverage run -m pytest --profile
+      - name: Run locust
+        run: |
+          uvicorn application.main:app &
+          cd tests/ && locust --config=.locust.conf --headless
